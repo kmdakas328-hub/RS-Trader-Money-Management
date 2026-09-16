@@ -46,7 +46,7 @@ TELEGRAM_URL = "https://t.me/RSTrader087"
 
 PAYMENT_METHODS = {
 
-```
+
 "bkash": {
     "name": "bKash",
     "label": "Demo bKash Number",
