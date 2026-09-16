@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template_string, request, redirect, url_for, session
 from ui.core.calculators.calculator import MoneyCalculator
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,910 +7,1020 @@ import re
 from datetime import datetime
 
 # =========================================================
+
 # RS TRADER MONEY MANAGEMENT SYSTEM
+
 # FINAL PUBLIC WEB VERSION
+
 # =========================================================
 
-app = Flask(__name__)
+app = Flask(**name**)
 
 app.secret_key = os.environ.get(
-    "RS_TRADER_SECRET",
-    "RS-Trader-Local-Secret-2026-Change-This"
+"RS_TRADER_SECRET",
+"RS-Trader-Local-Secret-2026-Change-This"
 )
 
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(**file**))
 DB_FILE = os.path.join(BASE_DIR, "rs_trader_auth.db")
 
 # =========================================================
+
 # BRAND / SUPPORT
+
 # =========================================================
 
 TELEGRAM_USERNAME = "@RSTrader087"
 TELEGRAM_URL = "https://t.me/RSTrader087"
 
 # =========================================================
+
 # PAYMENT METHODS
+
 # DEMO DETAILS FOR NOW
+
 # =========================================================
 
 PAYMENT_METHODS = {
 
-    "bkash": {
-        "name": "bKash",
-        "label": "Demo bKash Number",
-        "account": "01XXXXXXXXX",
-        "amount": "৳100",
-        "note": "DEMO ONLY — Real bKash number will be added later."
-    },
+```
+"bkash": {
+    "name": "bKash",
+    "label": "Demo bKash Number",
+    "account": "01XXXXXXXXX",
+    "amount": "৳100",
+    "note": "DEMO ONLY — Real bKash number will be added later."
+},
 
-    "nagad": {
-        "name": "Nagad",
-        "label": "Demo Nagad Number",
-        "account": "01XXXXXXXXX",
-        "amount": "৳100",
-        "note": "DEMO ONLY — Real Nagad number will be added later."
-    },
+"nagad": {
+    "name": "Nagad",
+    "label": "Demo Nagad Number",
+    "account": "01XXXXXXXXX",
+    "amount": "৳100",
+    "note": "DEMO ONLY — Real Nagad number will be added later."
+},
 
-    "binance": {
-        "name": "Binance",
-        "label": "Demo Binance ID",
-        "account": "DEMO-BINANCE-ID-2026",
-        "amount": "$1",
-        "note": "DEMO ONLY — Real Binance ID will be added later."
-    }
+"binance": {
+    "name": "Binance",
+    "label": "Demo Binance ID",
+    "account": "DEMO-BINANCE-ID-2026",
+    "amount": "$1",
+    "note": "DEMO ONLY — Real Binance ID will be added later."
+}
+```
 
 }
 
 # =========================================================
+
 # ACTIVATION CODES
+
 # =========================================================
 
 SECRET_CODES = [
-    "RS-7K9M-X2Q8-P4ZT",
-    "RS-3N6V-H8Q2-W5YK",
-    "RS-9P4X-T7LM-C2RA",
-    "RS-6Q8Z-M3VK-Y7NP",
-    "RS-2H5K-R9XD-F6TW",
-    "RS-4J8P-N6QX-T3VM",
-    "RS-5L7C-W2KR-Y9PN",
-    "RS-8M3V-H7QZ-K2XF",
-    "RS-6T9P-R4XN-J8QW",
-    "RS-3X7K-M5NV-P9ZT",
-    "RS-8Q2L-V6KR-N4PX",
-    "RS-5N9T-J3QW-X7MC",
-    "RS-4V8K-P2ZR-H6XN",
-    "RS-7C3M-T9QX-L5NP",
-    "RS-2X6R-K8VW-J4ZT",
-    "RS-9H5N-Q3PM-V7KC",
-    "RS-6K4T-X9QR-M2PV",
-    "RS-3P8W-N5XZ-R7QL",
-    "RS-8V2M-J6KT-Q4NX",
-    "RS-5Q7R-C3VP-H9ZM",
-    "RS-4N6X-T8KP-W2JQ",
-    "RS-7M9V-P4ZC-L5XR",
-    "RS-2K8Q-N6TW-H3PV",
-    "RS-9X4J-R7MN-C5ZK",
-    "RS-6P3V-K9QT-W8NX",
-    "RS-5Z7M-H2KR-X4QP",
-    "RS-8N6C-V3TJ-P9RW",
-    "RS-4Q9X-M7PK-J2VT",
-    "RS-7T5N-C8ZR-K3QW",
-    "RS-2V4M-X9PL-H7NK",
-    "RS-9K6R-T3QX-W5PJ",
-    "RS-3M8V-N4ZK-P7QT",
-    "RS-6X2Q-J9RW-C5MN",
-    "RS-5P7K-V3TX-H8ZR",
-    "RS-8C4N-Q6JM-W2VP",
-    "RS-4R9T-K5XZ-N7QW",
-    "RS-7X3M-P8KV-J4NC",
-    "RS-2N6Q-H9ZT-R5WP",
-    "RS-9V4K-M7QX-C2TJ",
-    "RS-6J8P-T3NR-X5QZ",
-    "RS-5K2V-W9MC-P7XR",
-    "RS-8Q4T-N6ZP-H3KV",
-    "RS-4X7M-J2QW-V9NC",
-    "RS-7P5R-K8XT-M3ZQ",
-    "RS-2C9N-W4QV-H6PK",
-    "RS-9T3V-X7MR-J5QK",
-    "RS-6N8Q-P2ZC-K4TW",
-    "RS-5M7X-H3VP-R9QJ",
-    "RS-8K4P-N6TW-C2ZR",
-    "RS-4V9M-Q7XK-J3NP",
-    "RS-7R2C-T5QW-H8ZM",
-    "RS-2X8N-P4KV-M6JQ",
-    "RS-9Q3T-W7ZR-C5PX",
-    "RS-6M5V-K2NQ-H9XT",
-    "RS-3K8R-J4PV-X7ZM",
-    "RS-8T6N-Q2WC-P5XR",
-    "RS-5V9K-M3QX-H7PJ",
-    "RS-4P2X-R8NT-C6QV",
-    "RS-7N5M-K9ZW-J3TX",
-    "RS-2Q4V-H8PK-X6NR",
-    "RS-9M7C-T3QW-V5KX",
-    "RS-6R2N-P9XZ-H4JM",
-    "RS-5X8T-K3QV-W7NP",
-    "RS-8P4M-N6XR-C2ZT",
-    "RS-4K7V-J9QW-T3PN",
-    "RS-7M2X-H5ZR-C8QK",
-    "RS-2N9T-P4KV-W6XM",
-    "RS-9C5R-Q7XK-J3VP",
-    "RS-6V8N-M2QZ-T4KP",
-    "RS-5Q3X-H9RW-N7JC",
-    "RS-8T4M-K6PV-X2ZR",
-    "RS-4N7Q-J5XC-W9KP",
-    "RS-7X8V-P3MR-H6ZT",
-    "RS-2K5N-Q9TW-C4XV",
-    "RS-9P6M-J2QK-R8NZ",
-    "RS-6T3X-V7QP-H5KM",
-    "RS-5N8R-C4ZW-P2JQ",
-    "RS-8M7K-X3TV-Q6NP",
-    "RS-4Q2V-H9PJ-N5XC",
-    "RS-7C6T-M4XK-W8ZR",
-    "RS-2V9P-Q5NM-J7XT",
-    "RS-9K3X-R6QV-H2MP",
-    "RS-6P8N-T4ZW-C7KQ",
-    "RS-5M2R-J9XP-V6TZ",
-    "RS-8Q7C-N3KV-H5XR",
-    "RS-4X6M-P2ZT-K9QW",
-    "RS-7N4V-H8JC-M3XP",
-    "RS-2T5K-W9QR-C6NV",
-    "RS-9V8M-X4PK-J3QT",
-    "RS-6K2Q-N7TZ-R5XP",
-    "RS-5P9X-H3VM-W8KC",
-    "RS-8R4N-Q6JW-T2ZP",
-    "RS-4M7V-C9XK-P5QT",
-    "RS-7Q3T-N8ZR-H2KP",
-    "RS-2X6M-J4PV-W9NC",
-    "RS-9N5K-R7QZ-C3XT",
-    "RS-6V4P-H8MW-K2QJ",
-    "RS-5T9N-X3KC-P7ZR",
-    "RS-8K2V-Q6XP-M4JW",
-    "RS-3Q7V-M9XK-H4PN",
+"RS-7K9M-X2Q8-P4ZT",
+"RS-3N6V-H8Q2-W5YK",
+"RS-9P4X-T7LM-C2RA",
+"RS-6Q8Z-M3VK-Y7NP",
+"RS-2H5K-R9XD-F6TW",
+"RS-4J8P-N6QX-T3VM",
+"RS-5L7C-W2KR-Y9PN",
+"RS-8M3V-H7QZ-K2XF",
+"RS-6T9P-R4XN-J8QW",
+"RS-3X7K-M5NV-P9ZT",
+"RS-8Q2L-V6KR-N4PX",
+"RS-5N9T-J3QW-X7MC",
+"RS-4V8K-P2ZR-H6XN",
+"RS-7C3M-T9QX-L5NP",
+"RS-2X6R-K8VW-J4ZT",
+"RS-9H5N-Q3PM-V7KC",
+"RS-6K4T-X9QR-M2PV",
+"RS-3P8W-N5XZ-R7QL",
+"RS-8V2M-J6KT-Q4NX",
+"RS-5Q7R-C3VP-H9ZM",
+"RS-4N6X-T8KP-W2JQ",
+"RS-7M9V-P4ZC-L5XR",
+"RS-2K8Q-N6TW-H3PV",
+"RS-9X4J-R7MN-C5ZK",
+"RS-6P3V-K9QT-W8NX",
+"RS-5Z7M-H2KR-X4QP",
+"RS-8N6C-V3TJ-P9RW",
+"RS-4Q9X-M7PK-J2VT",
+"RS-7T5N-C8ZR-K3QW",
+"RS-2V4M-X9PL-H7NK",
+"RS-9K6R-T3QX-W5PJ",
+"RS-3M8V-N4ZK-P7QT",
+"RS-6X2Q-J9RW-C5MN",
+"RS-5P7K-V3TX-H8ZR",
+"RS-8C4N-Q6JM-W2VP",
+"RS-4R9T-K5XZ-N7QW",
+"RS-7X3M-P8KV-J4NC",
+"RS-2N6Q-H9ZT-R5WP",
+"RS-9V4K-M7QX-C2TJ",
+"RS-6J8P-T3NR-X5QZ",
+"RS-5K2V-W9MC-P7XR",
+"RS-8Q4T-N6ZP-H3KV",
+"RS-4X7M-J2QW-V9NC",
+"RS-7P5R-K8XT-M3ZQ",
+"RS-2C9N-W4QV-H6PK",
+"RS-9T3V-X7MR-J5QK",
+"RS-6N8Q-P2ZC-K4TW",
+"RS-5M7X-H3VP-R9QJ",
+"RS-8K4P-N6TW-C2ZR",
+"RS-4V9M-Q7XK-J3NP",
+"RS-7R2C-T5QW-H8ZM",
+"RS-2X8N-P4KV-M6JQ",
+"RS-9Q3T-W7ZR-C5PX",
+"RS-6M5V-K2NQ-H9XT",
+"RS-3K8R-J4PV-X7ZM",
+"RS-8T6N-Q2WC-P5XR",
+"RS-5V9K-M3QX-H7PJ",
+"RS-4P2X-R8NT-C6QV",
+"RS-7N5M-K9ZW-J3TX",
+"RS-2Q4V-H8PK-X6NR",
+"RS-9M7C-T3QW-V5KX",
+"RS-6R2N-P9XZ-H4JM",
+"RS-5X8T-K3QV-W7NP",
+"RS-8P4M-N6XR-C2ZT",
+"RS-4K7V-J9QW-T3PN",
+"RS-7M2X-H5ZR-C8QK",
+"RS-2N9T-P4KV-W6XM",
+"RS-9C5R-Q7XK-J3VP",
+"RS-6V8N-M2QZ-T4KP",
+"RS-5Q3X-H9RW-N7JC",
+"RS-8T4M-K6PV-X2ZR",
+"RS-4N7Q-J5XC-W9KP",
+"RS-7X8V-P3MR-H6ZT",
+"RS-2K5N-Q9TW-C4XV",
+"RS-9P6M-J2QK-R8NZ",
+"RS-6T3X-V7QP-H5KM",
+"RS-5N8R-C4ZW-P2JQ",
+"RS-8M7K-X3TV-Q6NP",
+"RS-4Q2V-H9PJ-N5XC",
+"RS-7C6T-M4XK-W8ZR",
+"RS-2V9P-Q5NM-J7XT",
+"RS-9K3X-R6QV-H2MP",
+"RS-6P8N-T4ZW-C7KQ",
+"RS-5M2R-J9XP-V6TZ",
+"RS-8Q7C-N3KV-H5XR",
+"RS-4X6M-P2ZT-K9QW",
+"RS-7N4V-H8JC-M3XP",
+"RS-2T5K-W9QR-C6NV",
+"RS-9V8M-X4PK-J3QT",
+"RS-6K2Q-N7TZ-R5XP",
+"RS-5P9X-H3VM-W8KC",
+"RS-8R4N-Q6JW-T2ZP",
+"RS-4M7V-C9XK-P5QT",
+"RS-7Q3T-N8ZR-H2KP",
+"RS-2X6M-J4PV-W9NC",
+"RS-9N5K-R7QZ-C3XT",
+"RS-6V4P-H8MW-K2QJ",
+"RS-5T9N-X3KC-P7ZR",
+"RS-8K2V-Q6XP-M4JW",
+"RS-3Q7V-M9XK-H4PN",
 ]
 
 # =========================================================
+
 # CALCULATOR
+
 # =========================================================
 
 calculator = MoneyCalculator(
-    starting_capital=114,
-    payout=85,
-    profit_target_percent=5,
-    stop_loss_percent=7.5,
-    max_loss_streak=3,
-    planned_wins=5,
-    base_risk_percent=1,
+starting_capital=114,
+payout=85,
+profit_target_percent=5,
+stop_loss_percent=7.5,
+max_loss_streak=3,
+planned_wins=5,
+base_risk_percent=1,
 )
 
 # =========================================================
+
 # DATABASE
+
 # =========================================================
 
 def get_db():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
+conn = sqlite3.connect(DB_FILE)
+conn.row_factory = sqlite3.Row
+return conn
 
 def init_db():
 
-    conn = get_db()
+```
+conn = get_db()
 
-    # USERS
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            activation_code TEXT UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+# USERS
+conn.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        activation_code TEXT UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+""")
 
-    # ACTIVATION CODES
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS activation_codes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT UNIQUE NOT NULL,
-            used INTEGER DEFAULT 0,
-            owner_username TEXT
-        )
-    """)
+# ACTIVATION CODES
+conn.execute("""
+    CREATE TABLE IF NOT EXISTS activation_codes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        used INTEGER DEFAULT 0,
+        owner_username TEXT
+    )
+""")
 
-    # PAYMENT REQUESTS
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS payment_requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            method TEXT NOT NULL,
-            account TEXT NOT NULL,
-            amount TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+# PAYMENT REQUESTS
+conn.execute("""
+    CREATE TABLE IF NOT EXISTS payment_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        method TEXT NOT NULL,
+        account TEXT NOT NULL,
+        amount TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+""")
 
-    # Existing database upgrade
-    activation_columns = [
-        row["name"]
-        for row in conn.execute(
-            "PRAGMA table_info(activation_codes)"
-        ).fetchall()
-    ]
+# Existing database upgrade
+activation_columns = [
+    row["name"]
+    for row in conn.execute(
+        "PRAGMA table_info(activation_codes)"
+    ).fetchall()
+]
 
-    if "owner_username" not in activation_columns:
-        conn.execute(
-            """
-            ALTER TABLE activation_codes
-            ADD COLUMN owner_username TEXT
-            """
-        )
+if "owner_username" not in activation_columns:
+    conn.execute(
+        """
+        ALTER TABLE activation_codes
+        ADD COLUMN owner_username TEXT
+        """
+    )
 
-    # Insert activation codes
-    for code in SECRET_CODES:
+# Insert activation codes
+for code in SECRET_CODES:
 
-        conn.execute(
-            """
-            INSERT OR IGNORE INTO activation_codes
-            (code, used, owner_username)
-            VALUES (?, 0, NULL)
-            """,
-            (code,)
-        )
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO activation_codes
+        (code, used, owner_username)
+        VALUES (?, 0, NULL)
+        """,
+        (code,)
+    )
 
-    conn.commit()
-    conn.close()
-
+conn.commit()
+conn.close()
+```
 
 init_db()
 
 # =========================================================
+
 # HELPERS
+
 # =========================================================
 
 def login_required():
 
-    return (
-        session.get("logged_in", False)
-        and
-        session.get("activated", False)
-    )
-
+```
+return (
+    session.get("logged_in", False)
+    and
+    session.get("activated", False)
+)
+```
 
 def valid_username(username):
 
-    return (
-        3 <= len(username) <= 30
-        and
-        re.fullmatch(
-            r"[A-Za-z0-9_.-]+",
-            username
-        ) is not None
-    )
-
+```
+return (
+    3 <= len(username) <= 30
+    and
+    re.fullmatch(
+        r"[A-Za-z0-9_.-]+",
+        username
+    ) is not None
+)
+```
 
 def valid_password(password):
 
-    return len(password) >= 6
-
+```
+return len(password) >= 6
+```
 
 def get_auth_context():
 
-    return {
-        "telegram_username": TELEGRAM_USERNAME,
-        "telegram_url": TELEGRAM_URL,
-    }
-
+```
+return {
+    "telegram_username": TELEGRAM_USERNAME,
+    "telegram_url": TELEGRAM_URL,
+}
+```
 
 # =========================================================
+
 # SVG ICONS
-# =========================================================
-
-TELEGRAM_SVG = """
-<svg viewBox="0 0 48 48"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <circle
-        cx="24"
-        cy="24"
-        r="24"
-        fill="#229ED9"
-    />
-
-    <path
-        d="M36.9 11.9 30.5 37c-.5 1.8-1.6 2.2-3.2 1.4l-8.9-6.6-4.3 4.1c-.5.5-.9.9-1.8.9l.6-9.1 16.6-15c.7-.6-.2-.9-1.1-.3L8 25.1l-8.6-2.7c-1.9-.6-1.9-1.9.4-2.8L33.5 7.5c1.6-.6 3.1.4 2.5 4.4l.9 0z"
-        fill="white"
-        transform="translate(6 2) scale(.75)"
-    />
-
-</svg>
-"""
-
-BKASH_SVG = """
-<svg viewBox="0 0 48 48"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <circle
-        cx="24"
-        cy="24"
-        r="24"
-        fill="#E2136E"
-    />
-
-    <text
-        x="24"
-        y="31"
-        text-anchor="middle"
-        font-family="Arial,sans-serif"
-        font-size="18"
-        font-weight="900"
-        fill="white"
-    >b</text>
-
-</svg>
-"""
-
-NAGAD_SVG = """
-<svg viewBox="0 0 48 48"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <circle
-        cx="24"
-        cy="24"
-        r="24"
-        fill="#F7941D"
-    />
-
-    <text
-        x="24"
-        y="31"
-        text-anchor="middle"
-        font-family="Arial,sans-serif"
-        font-size="19"
-        font-weight="900"
-        fill="white"
-    >N</text>
-
-</svg>
-"""
-
-BINANCE_SVG = """
-<svg viewBox="0 0 48 48"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <circle
-        cx="24"
-        cy="24"
-        r="24"
-        fill="#F3BA2F"
-    />
-
-    <g fill="white">
-
-        <path d="M24 8 29.4 13.4 24 18.8 18.6 13.4z"/>
-
-        <path d="M15 17 20.4 22.4 15 27.8 9.6 22.4z"/>
-
-        <path d="M33 17 38.4 22.4 33 27.8 27.6 22.4z"/>
-
-        <path d="M24 26 29.4 31.4 24 36.8 18.6 31.4z"/>
-
-        <path d="M24 20 27.7 23.7 24 27.4 20.3 23.7z"/>
-
-    </g>
-
-</svg>
-"""
-
-LOCK_SVG = """
-<svg viewBox="0 0 48 48"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <rect
-        x="10"
-        y="20"
-        width="28"
-        height="20"
-        rx="5"
-        fill="currentColor"
-    />
-
-    <path
-        d="M16 20v-6a8 8 0 0 1 16 0v6"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linecap="round"
-    />
-
-</svg>
-"""
-
-CHECK_SVG = """
-<svg viewBox="0 0 64 64"
-     xmlns="http://www.w3.org/2000/svg">
-
-    <circle
-        cx="32"
-        cy="32"
-        r="30"
-        fill="currentColor"
-    />
-
-    <path
-        d="M18 33.5 27 42l19-21"
-        fill="none"
-        stroke="white"
-        stroke-width="6"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-    />
-
-</svg>
-"""
 
 # =========================================================
+
+TELEGRAM_SVG = """ <svg viewBox="0 0 48 48"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<circle
+    cx="24"
+    cy="24"
+    r="24"
+    fill="#229ED9"
+/>
+
+<path
+    d="M36.9 11.9 30.5 37c-.5 1.8-1.6 2.2-3.2 1.4l-8.9-6.6-4.3 4.1c-.5.5-.9.9-1.8.9l.6-9.1 16.6-15c.7-.6-.2-.9-1.1-.3L8 25.1l-8.6-2.7c-1.9-.6-1.9-1.9.4-2.8L33.5 7.5c1.6-.6 3.1.4 2.5 4.4l.9 0z"
+    fill="white"
+    transform="translate(6 2) scale(.75)"
+/>
+```
+
+</svg>
+"""
+
+BKASH_SVG = """ <svg viewBox="0 0 48 48"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<circle
+    cx="24"
+    cy="24"
+    r="24"
+    fill="#E2136E"
+/>
+
+<text
+    x="24"
+    y="31"
+    text-anchor="middle"
+    font-family="Arial,sans-serif"
+    font-size="18"
+    font-weight="900"
+    fill="white"
+>b</text>
+```
+
+</svg>
+"""
+
+NAGAD_SVG = """ <svg viewBox="0 0 48 48"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<circle
+    cx="24"
+    cy="24"
+    r="24"
+    fill="#F7941D"
+/>
+
+<text
+    x="24"
+    y="31"
+    text-anchor="middle"
+    font-family="Arial,sans-serif"
+    font-size="19"
+    font-weight="900"
+    fill="white"
+>N</text>
+```
+
+</svg>
+"""
+
+BINANCE_SVG = """ <svg viewBox="0 0 48 48"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<circle
+    cx="24"
+    cy="24"
+    r="24"
+    fill="#F3BA2F"
+/>
+
+<g fill="white">
+
+    <path d="M24 8 29.4 13.4 24 18.8 18.6 13.4z"/>
+
+    <path d="M15 17 20.4 22.4 15 27.8 9.6 22.4z"/>
+
+    <path d="M33 17 38.4 22.4 33 27.8 27.6 22.4z"/>
+
+    <path d="M24 26 29.4 31.4 24 36.8 18.6 31.4z"/>
+
+    <path d="M24 20 27.7 23.7 24 27.4 20.3 23.7z"/>
+
+</g>
+```
+
+</svg>
+"""
+
+LOCK_SVG = """ <svg viewBox="0 0 48 48"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<rect
+    x="10"
+    y="20"
+    width="28"
+    height="20"
+    rx="5"
+    fill="currentColor"
+/>
+
+<path
+    d="M16 20v-6a8 8 0 0 1 16 0v6"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="4"
+    stroke-linecap="round"
+/>
+```
+
+</svg>
+"""
+
+CHECK_SVG = """ <svg viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg">
+
+```
+<circle
+    cx="32"
+    cy="32"
+    r="30"
+    fill="currentColor"
+/>
+
+<path
+    d="M18 33.5 27 42l19-21"
+    fill="none"
+    stroke="white"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+/>
+```
+
+</svg>
+"""
+
+# =========================================================
+
 # AUTH CSS
+
 # =========================================================
 
 AUTH_CSS = """
 
 *{
-    box-sizing:border-box;
+box-sizing:border-box;
 }
 
 body{
-    margin:0;
-    min-height:100vh;
+margin:0;
+min-height:100vh;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+```
+display:flex;
+align-items:center;
+justify-content:center;
 
-    padding:20px 12px;
+padding:20px 12px;
 
-    background:
-        radial-gradient(
-            circle at 15% 10%,
-            rgba(37,99,235,.17),
-            transparent 32%
-        ),
-        radial-gradient(
-            circle at 85% 85%,
-            rgba(124,58,237,.15),
-            transparent 30%
-        ),
-        #050811;
+background:
+    radial-gradient(
+        circle at 15% 10%,
+        rgba(37,99,235,.17),
+        transparent 32%
+    ),
+    radial-gradient(
+        circle at 85% 85%,
+        rgba(124,58,237,.15),
+        transparent 30%
+    ),
+    #050811;
 
-    color:#f8fafc;
+color:#f8fafc;
 
-    font-family:
-        Inter,
-        Arial,
-        sans-serif;
+font-family:
+    Inter,
+    Arial,
+    sans-serif;
+```
+
 }
 
 .auth-wrapper{
-    width:min(500px,94%);
+width:min(500px,94%);
 }
 
 .brand{
-    text-align:center;
-    margin-bottom:22px;
+text-align:center;
+margin-bottom:22px;
 }
 
 .logo{
-    width:62px;
-    height:62px;
+width:62px;
+height:62px;
 
-    margin:auto;
+```
+margin:auto;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+display:flex;
+align-items:center;
+justify-content:center;
 
-    border-radius:18px;
+border-radius:18px;
 
-    font-size:22px;
-    font-weight:950;
+font-size:22px;
+font-weight:950;
 
-    background:
-        linear-gradient(
-            135deg,
-            #2563eb,
-            #7c3aed
-        );
+background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #7c3aed
+    );
 
-    box-shadow:
-        0 15px 45px
-        rgba(37,99,235,.30);
+box-shadow:
+    0 15px 45px
+    rgba(37,99,235,.30);
+```
+
 }
 
 .brand h1{
-    margin:14px 0 4px;
+margin:14px 0 4px;
 
-    font-size:26px;
-    letter-spacing:-.6px;
+```
+font-size:26px;
+letter-spacing:-.6px;
+```
+
 }
 
 .brand p{
-    margin:0;
+margin:0;
 
-    color:#64748b;
+```
+color:#64748b;
 
-    font-size:9px;
+font-size:9px;
 
-    letter-spacing:1.3px;
+letter-spacing:1.3px;
 
-    text-transform:uppercase;
+text-transform:uppercase;
+```
+
 }
 
 .card{
-    padding:30px;
+padding:30px;
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(15,23,42,.98),
-            rgba(8,13,24,.99)
-        );
+```
+background:
+    linear-gradient(
+        145deg,
+        rgba(15,23,42,.98),
+        rgba(8,13,24,.99)
+    );
 
-    border:
-        1px solid
-        rgba(148,163,184,.12);
+border:
+    1px solid
+    rgba(148,163,184,.12);
 
-    border-radius:22px;
+border-radius:22px;
 
-    box-shadow:
-        0 25px 70px
-        rgba(0,0,0,.45);
+box-shadow:
+    0 25px 70px
+    rgba(0,0,0,.45);
+```
+
 }
 
 .card-icon{
-    width:49px;
-    height:49px;
+width:49px;
+height:49px;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+```
+display:flex;
+align-items:center;
+justify-content:center;
 
-    margin-bottom:16px;
+margin-bottom:16px;
 
-    border-radius:13px;
+border-radius:13px;
 
-    color:#60a5fa;
+color:#60a5fa;
 
-    background:
-        rgba(59,130,246,.08);
+background:
+    rgba(59,130,246,.08);
 
-    border:
-        1px solid
-        rgba(59,130,246,.16);
+border:
+    1px solid
+    rgba(59,130,246,.16);
 
-    font-size:19px;
+font-size:19px;
+```
+
 }
 
 h2{
-    margin:0;
+margin:0;
 
-    font-size:20px;
+```
+font-size:20px;
+```
+
 }
 
 .subtitle{
-    margin:
-        7px 0 22px;
+margin:
+7px 0 22px;
 
-    color:#64748b;
+```
+color:#64748b;
 
-    font-size:10px;
+font-size:10px;
 
-    line-height:1.65;
+line-height:1.65;
+```
+
 }
 
 .field{
-    margin-bottom:15px;
+margin-bottom:15px;
 }
 
 label{
-    display:block;
+display:block;
 
-    margin-bottom:7px;
+```
+margin-bottom:7px;
 
-    color:#94a3b8;
+color:#94a3b8;
 
-    font-size:9px;
+font-size:9px;
 
-    font-weight:800;
+font-weight:800;
 
-    letter-spacing:.8px;
+letter-spacing:.8px;
 
-    text-transform:uppercase;
+text-transform:uppercase;
+```
+
 }
 
 .input{
-    width:100%;
+width:100%;
 
-    height:48px;
+```
+height:48px;
 
-    padding:0 13px;
+padding:0 13px;
 
-    background:#060b14;
+background:#060b14;
 
-    color:#fff;
+color:#fff;
 
-    border:
-        1px solid
-        #263449;
+border:
+    1px solid
+    #263449;
 
-    border-radius:10px;
+border-radius:10px;
 
-    outline:none;
+outline:none;
 
-    font-size:13px;
+font-size:13px;
 
-    transition:.2s;
+transition:.2s;
+```
+
 }
 
 .input:focus{
-    border-color:#3b82f6;
+border-color:#3b82f6;
 
-    box-shadow:
-        0 0 0 3px
-        rgba(59,130,246,.09);
+```
+box-shadow:
+    0 0 0 3px
+    rgba(59,130,246,.09);
+```
+
 }
 
 .main-button{
-    width:100%;
+width:100%;
 
-    min-height:49px;
+```
+min-height:49px;
 
-    margin-top:5px;
+margin-top:5px;
 
-    border:0;
+border:0;
 
-    border-radius:11px;
+border-radius:11px;
 
-    color:#fff;
+color:#fff;
 
-    background:
-        linear-gradient(
-            135deg,
-            #2563eb,
-            #4f46e5
-        );
+background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+    );
 
-    font-size:12px;
+font-size:12px;
 
-    font-weight:900;
+font-weight:900;
 
-    letter-spacing:.35px;
+letter-spacing:.35px;
 
-    cursor:pointer;
+cursor:pointer;
 
-    transition:.18s;
+transition:.18s;
+```
+
 }
 
 .main-button:hover{
-    filter:brightness(1.08);
+filter:brightness(1.08);
 
-    transform:
-        translateY(-1px);
+```
+transform:
+    translateY(-1px);
+```
+
 }
 
 .error{
-    margin-bottom:16px;
+margin-bottom:16px;
 
-    padding:11px 12px;
+```
+padding:11px 12px;
 
-    border-radius:9px;
+border-radius:9px;
 
-    color:#fca5a5;
+color:#fca5a5;
 
-    background:
-        rgba(239,68,68,.08);
+background:
+    rgba(239,68,68,.08);
 
-    border:
-        1px solid
-        rgba(239,68,68,.20);
+border:
+    1px solid
+    rgba(239,68,68,.20);
 
-    font-size:10px;
+font-size:10px;
 
-    line-height:1.5;
+line-height:1.5;
+```
+
 }
 
 .success{
-    margin-bottom:16px;
+margin-bottom:16px;
 
-    padding:11px 12px;
+```
+padding:11px 12px;
 
-    border-radius:9px;
+border-radius:9px;
 
-    color:#86efac;
+color:#86efac;
 
-    background:
-        rgba(34,197,94,.08);
+background:
+    rgba(34,197,94,.08);
 
-    border:
-        1px solid
-        rgba(34,197,94,.20);
+border:
+    1px solid
+    rgba(34,197,94,.20);
 
-    font-size:10px;
+font-size:10px;
 
-    line-height:1.5;
+line-height:1.5;
+```
+
 }
 
 .links{
-    display:flex;
+display:flex;
 
-    justify-content:space-between;
+```
+justify-content:space-between;
 
-    align-items:center;
+align-items:center;
 
-    gap:10px;
+gap:10px;
 
-    margin-top:18px;
+margin-top:18px;
+```
+
 }
 
 .links a{
-    color:#64748b;
+color:#64748b;
 
-    text-decoration:none;
+```
+text-decoration:none;
 
-    font-size:10px;
+font-size:10px;
 
-    font-weight:800;
+font-weight:800;
 
-    transition:.18s;
+transition:.18s;
+```
+
 }
 
-.links a:hover{
-    color:#60a5fa;
-}
+.links a:hover
 
 .create-account-link{
-    color:#93c5fd !important;
+color:#93c5fd !important;
 
-    font-size:15px !important;
+```
+font-size:15px !important;
 
-    font-weight:950 !important;
+font-weight:950 !important;
+```
+
 }
 
 .support-box{
-    display:flex;
+display:flex;
 
-    align-items:center;
+```
+align-items:center;
 
-    gap:12px;
+gap:12px;
 
-    margin-top:20px;
+margin-top:20px;
 
-    padding:14px;
+padding:14px;
 
-    border-radius:15px;
+border-radius:15px;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(34,158,217,.12),
-            rgba(37,99,235,.06)
-        );
+background:
+    linear-gradient(
+        135deg,
+        rgba(34,158,217,.12),
+        rgba(37,99,235,.06)
+    );
 
-    border:
-        1px solid
-        rgba(34,158,217,.23);
+border:
+    1px solid
+    rgba(34,158,217,.23);
 
-    text-decoration:none;
+text-decoration:none;
 
-    transition:.2s;
+transition:.2s;
+```
+
 }
 
 .support-box:hover{
-    transform:
-        translateY(-1px);
+transform:
+translateY(-1px);
 
-    border-color:
-        rgba(34,158,217,.40);
+```
+border-color:
+    rgba(34,158,217,.40);
+```
+
 }
 
 .telegram-icon{
-    width:46px;
-    height:46px;
+width:46px;
+height:46px;
 
-    flex:0 0 46px;
+```
+flex:0 0 46px;
+```
+
 }
 
 .telegram-icon svg{
-    width:100%;
-    height:100%;
+width:100%;
+height:100%;
 }
 
 .support-title{
-    display:block;
+display:block;
 
-    color:#e2e8f0;
+```
+color:#e2e8f0;
 
-    font-size:13px;
+font-size:13px;
 
-    font-weight:900;
+font-weight:900;
+```
+
 }
 
 .support-user{
-    display:block;
+display:block;
 
-    margin-top:3px;
+```
+margin-top:3px;
 
-    color:#8fd5f7;
+color:#8fd5f7;
 
-    font-size:11px;
+font-size:11px;
 
-    font-weight:800;
+font-weight:800;
+```
+
 }
 
 .security{
-    margin-top:20px;
+margin-top:20px;
 
-    padding-top:16px;
+```
+padding-top:16px;
 
-    border-top:
-        1px solid
-        rgba(148,163,184,.08);
+border-top:
+    1px solid
+    rgba(148,163,184,.08);
 
-    text-align:center;
+text-align:center;
 
-    color:#475569;
+color:#475569;
 
-    font-size:9px;
+font-size:9px;
 
-    line-height:1.5;
+line-height:1.5;
+```
+
 }
 
 .footer{
-    text-align:center;
+text-align:center;
 
-    margin-top:18px;
+```
+margin-top:18px;
 
-    color:#334155;
+color:#334155;
 
-    font-size:8px;
+font-size:8px;
 
-    letter-spacing:1px;
+letter-spacing:1px;
+```
+
 }
 
 @media(max-width:520px){
 
-    .auth-wrapper{
-        width:96%;
-    }
+```
+.auth-wrapper{
+    width:96%;
+}
 
-    .card{
-        padding:23px 18px;
+.card{
+    padding:23px 18px;
 
-        border-radius:19px;
-    }
+    border-radius:19px;
+}
 
-    .links{
-        flex-direction:column;
+.links{
+    flex-direction:column;
 
-        align-items:center;
-    }
+    align-items:center;
+}
 
-    .create-account-link{
-        font-size:15px !important;
-    }
+.create-account-link{
+    font-size:15px !important;
+}
+```
 
 }
 
 """
 
 # =========================================================
+
 # LOGIN HTML
+
 # =========================================================
 
 LOGIN_HTML = """
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -919,8 +1028,9 @@ LOGIN_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Sign In</title>
@@ -951,24 +1061,19 @@ Professional Trading System
 
 </div>
 
-
 <div class="card">
-
 
 <div class="card-icon">
 ◈
 </div>
 
-
 <h2>
 Welcome Back
 </h2>
 
-
 <div class="subtitle">
 Sign in to securely access your trading dashboard.
 </div>
-
 
 {% if error %}
 
@@ -978,7 +1083,6 @@ Sign in to securely access your trading dashboard.
 
 {% endif %}
 
-
 {% if success %}
 
 <div class="success">
@@ -987,9 +1091,7 @@ Sign in to securely access your trading dashboard.
 
 {% endif %}
 
-
 <form method="POST">
-
 
 <div class="field">
 
@@ -998,16 +1100,16 @@ Username
 </label>
 
 <input
-    class="input"
-    type="text"
-    name="username"
-    placeholder="Enter your username"
-    autocomplete="username"
-    required
+class="input"
+type="text"
+name="username"
+placeholder="Enter your username"
+autocomplete="username"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -1016,59 +1118,54 @@ Password
 </label>
 
 <input
-    class="input"
-    type="password"
-    name="password"
-    placeholder="Enter your password"
-    autocomplete="current-password"
-    required
+class="input"
+type="password"
+name="password"
+placeholder="Enter your password"
+autocomplete="current-password"
+required
+
 >
 
 </div>
 
-
 <button
-    class="main-button"
-    type="submit"
->
-SIGN IN
-</button>
+class="main-button"
+type="submit"
 
+>
+
+SIGN IN </button>
 
 </form>
 
-
 <div class="links">
 
-
 <a
-    href="/register"
-    class="create-account-link"
->
-CREATE ACCOUNT
-</a>
+href="/register"
+class="create-account-link"
 
+>
+
+CREATE ACCOUNT </a>
 
 <a href="/forgot-password">
 FORGOT PASSWORD?
 </a>
 
-
 </div>
 
-
 <a
-    class="support-box"
-    href="{{ telegram_url }}"
-    target="_blank"
-    rel="noopener noreferrer"
->
+class="support-box"
+href="{{ telegram_url }}"
+target="_blank"
+rel="noopener noreferrer"
 
+>
 
 <span class="telegram-icon">
 {{ telegram_svg|safe }}
 </span>
-
 
 <span>
 
@@ -1082,22 +1179,17 @@ Contact {{ telegram_username }}
 
 </span>
 
-
 </a>
-
 
 <div class="security">
 🔒 Secure RS Trader Access
 </div>
 
-
 </div>
-
 
 <div class="footer">
 RS TRADER • MONEY MANAGEMENT
 </div>
-
 
 </div>
 
@@ -1108,12 +1200,15 @@ RS TRADER • MONEY MANAGEMENT
 """
 
 # =========================================================
+
 # REGISTER HTML
+
 # =========================================================
 
 REGISTER_HTML = """
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -1121,8 +1216,9 @@ REGISTER_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Create Account</title>
@@ -1136,7 +1232,6 @@ REGISTER_HTML = """
 <body>
 
 <div class="auth-wrapper">
-
 
 <div class="brand">
 
@@ -1154,24 +1249,19 @@ Create Your Account
 
 </div>
 
-
 <div class="card">
-
 
 <div class="card-icon">
 +
 </div>
 
-
 <h2>
 Create Account
 </h2>
 
-
 <div class="subtitle">
 Create your RS Trader account and continue to activation.
 </div>
-
 
 {% if error %}
 
@@ -1181,9 +1271,7 @@ Create your RS Trader account and continue to activation.
 
 {% endif %}
 
-
 <form method="POST">
-
 
 <div class="field">
 
@@ -1192,17 +1280,17 @@ Username
 </label>
 
 <input
-    class="input"
-    type="text"
-    name="username"
-    placeholder="Choose a username"
-    maxlength="30"
-    autocomplete="username"
-    required
+class="input"
+type="text"
+name="username"
+placeholder="Choose a username"
+maxlength="30"
+autocomplete="username"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -1211,16 +1299,16 @@ Password
 </label>
 
 <input
-    class="input"
-    type="password"
-    name="password"
-    placeholder="Create a password"
-    autocomplete="new-password"
-    required
+class="input"
+type="password"
+name="password"
+placeholder="Create a password"
+autocomplete="new-password"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -1229,53 +1317,51 @@ Confirm Password
 </label>
 
 <input
-    class="input"
-    type="password"
-    name="confirm_password"
-    placeholder="Confirm your password"
-    autocomplete="new-password"
-    required
+class="input"
+type="password"
+name="confirm_password"
+placeholder="Confirm your password"
+autocomplete="new-password"
+required
+
 >
 
 </div>
 
-
 <button
-    class="main-button"
-    type="submit"
->
-CREATE ACCOUNT
-</button>
+class="main-button"
+type="submit"
 
+>
+
+CREATE ACCOUNT </button>
 
 </form>
-
 
 <div class="links"
      style="justify-content:center;">
 
 <a
-    href="/login"
-    class="create-account-link"
+href="/login"
+class="create-account-link"
+
 >
-← BACK TO LOGIN
-</a>
+
+← BACK TO LOGIN </a>
 
 </div>
 
-
 <a
-    class="support-box"
-    href="{{ telegram_url }}"
-    target="_blank"
-    rel="noopener noreferrer"
->
+class="support-box"
+href="{{ telegram_url }}"
+target="_blank"
+rel="noopener noreferrer"
 
+>
 
 <span class="telegram-icon">
 {{ telegram_svg|safe }}
 </span>
-
 
 <span>
 
@@ -1289,22 +1375,17 @@ Contact {{ telegram_username }}
 
 </span>
 
-
 </a>
-
 
 <div class="security">
 Password must contain at least 6 characters.
 </div>
 
-
 </div>
-
 
 <div class="footer">
 RS TRADER • SECURE ACCOUNT
 </div>
-
 
 </div>
 
@@ -1315,12 +1396,15 @@ RS TRADER • SECURE ACCOUNT
 """
 
 # =========================================================
+
 # ACTIVATION HTML
+
 # =========================================================
 
 ACTIVATE_HTML = """
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -1328,8 +1412,9 @@ ACTIVATE_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Activate Account</title>
@@ -1548,6 +1633,7 @@ body{
 .section{
 
     margin-top:21px;
+
 }
 
 .section-title{
@@ -2127,9 +2213,7 @@ body{
 
 <body>
 
-
 <div class="container">
-
 
 <div class="brand">
 
@@ -2147,9 +2231,7 @@ Account Activation
 
 </div>
 
-
 <div class="card">
-
 
 <div class="hero">
 
@@ -2171,7 +2253,6 @@ Enter your activation code or choose your payment method.
 
 </div>
 
-
 {% if error %}
 
 <div class="alert">
@@ -2179,7 +2260,6 @@ Enter your activation code or choose your payment method.
 </div>
 
 {% endif %}
-
 
 <!-- ACTIVATION CODE -->
 
@@ -2197,7 +2277,6 @@ Instant Activation
 
 </div>
 
-
 <div class="code-box">
 
 <form method="POST">
@@ -2207,28 +2286,28 @@ Activation Code
 </label>
 
 <input
-    class="code-input"
-    type="text"
-    name="code"
-    placeholder="RS-XXXX-XXXX-XXXX"
-    autocomplete="off"
-    required
->
+class="code-input"
+type="text"
+name="code"
+placeholder="RS-XXXX-XXXX-XXXX"
+autocomplete="off"
+required
 
+>
 
 <button
-    class="activate-btn"
-    type="submit"
+class="activate-btn"
+type="submit"
+
 >
-ACTIVATE ACCOUNT
-</button>
+
+ACTIVATE ACCOUNT </button>
 
 </form>
 
 </div>
 
 </div>
-
 
 <!-- PAYMENT METHODS -->
 
@@ -2246,15 +2325,14 @@ Choose One
 
 </div>
 
-
 <div class="payment-grid">
 
-
 <button
-    type="button"
-    class="payment-card"
-    id="payment-card-bkash"
-    onclick="selectPayment('bkash')"
+type="button"
+class="payment-card"
+id="payment-card-bkash"
+onclick="selectPayment('bkash')"
+
 >
 
 <div class="payment-logo">
@@ -2271,12 +2349,12 @@ bKash
 
 </button>
 
-
 <button
-    type="button"
-    class="payment-card"
-    id="payment-card-nagad"
-    onclick="selectPayment('nagad')"
+type="button"
+class="payment-card"
+id="payment-card-nagad"
+onclick="selectPayment('nagad')"
+
 >
 
 <div class="payment-logo">
@@ -2293,12 +2371,12 @@ Nagad
 
 </button>
 
-
 <button
-    type="button"
-    class="payment-card"
-    id="payment-card-binance"
-    onclick="selectPayment('binance')"
+type="button"
+class="payment-card"
+id="payment-card-binance"
+onclick="selectPayment('binance')"
+
 >
 
 <div class="payment-logo">
@@ -2315,15 +2393,12 @@ $1
 
 </button>
 
-
 </div>
-
 
 <div
     class="payment-panel"
     id="payment-panel"
 >
-
 
 <div class="payment-head">
 
@@ -2346,7 +2421,6 @@ Complete your payment using the selected method.
 
 </div>
 
-
 <div class="amount-box">
 
 <span class="amount-label">
@@ -2354,39 +2428,43 @@ Amount Required
 </span>
 
 <span
-    class="amount-value"
-    id="payment-amount"
+class="amount-value"
+id="payment-amount"
+
 >
--
+
+*
+
 </span>
 
 </div>
-
 
 <span class="demo-label">
 DEMO PAYMENT DETAILS
 </span>
 
-
 <div class="account-box">
 
 <span
-    class="account"
-    id="payment-account"
+class="account"
+id="payment-account"
+
 >
--
+
+*
+
 </span>
 
 <button
-    class="copy-btn"
-    type="button"
-    onclick="copyPaymentAccount()"
+class="copy-btn"
+type="button"
+onclick="copyPaymentAccount()"
+
 >
-COPY
-</button>
+
+COPY </button>
 
 </div>
-
 
 <div
     class="payment-note"
@@ -2394,33 +2472,31 @@ COPY
 >
 </div>
 
-
 <form
     method="POST"
     action="/payment-confirm"
 >
 
 <input
-    type="hidden"
-    name="method"
-    id="payment-method"
->
+type="hidden"
+name="method"
+id="payment-method"
 
+>
 
 <button
-    class="confirm-btn"
-    type="submit"
+class="confirm-btn"
+type="submit"
+
 >
-I HAVE PAID • CONFIRM PAYMENT
-</button>
+
+I HAVE PAID • CONFIRM PAYMENT </button>
 
 </form>
 
-
 </div>
 
 </div>
-
 
 <!-- TELEGRAM SUPPORT -->
 
@@ -2438,12 +2514,12 @@ Contact Us
 
 </div>
 
-
 <a
-    class="support"
-    href="{{ telegram_url }}"
-    target="_blank"
-    rel="noopener noreferrer"
+class="support"
+href="{{ telegram_url }}"
+target="_blank"
+rel="noopener noreferrer"
+
 >
 
 <div class="support-logo">
@@ -2466,7 +2542,6 @@ RS Trader Support
 
 </div>
 
-
 <div class="info">
 
 <b>Payment Amount:</b>
@@ -2475,10 +2550,8 @@ bKash ৳100 • Nagad ৳100 • Binance $1
 
 <br><br>
 
-After completing payment, press
-<b>CONFIRM PAYMENT</b>
-and contact
-<b>{{ telegram_username }}</b>
+After completing payment, press <b>CONFIRM PAYMENT</b>
+and contact <b>{{ telegram_username }}</b>
 on Telegram.
 
 <br><br>
@@ -2488,17 +2561,13 @@ demo placeholders and can be replaced later.
 
 </div>
 
-
 </div>
-
 
 <div class="footer">
 RS TRADER • SECURE ACTIVATION SYSTEM
 </div>
 
-
 </div>
-
 
 <script>
 
@@ -2720,7 +2789,6 @@ async function copyPaymentAccount(){
 
 </script>
 
-
 </body>
 
 </html>
@@ -2728,12 +2796,15 @@ async function copyPaymentAccount(){
 """
 
 # =========================================================
+
 # PAYMENT CONFIRMATION PAGE
+
 # =========================================================
 
 PAYMENT_CONTACT_HTML = """
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -2741,8 +2812,9 @@ PAYMENT_CONTACT_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Payment Confirmation</title>
@@ -3033,19 +3105,15 @@ h1{
 
 <body>
 
-
 <div class="card">
-
 
 <div class="check">
 {{ check_svg|safe }}
 </div>
 
-
 <h1>
 Payment Confirmation
 </h1>
-
 
 <div class="subtitle">
 
@@ -3054,7 +3122,6 @@ Contact RS Trader Support on Telegram to complete
 the manual verification process.
 
 </div>
-
 
 <div class="method">
 
@@ -3065,7 +3132,6 @@ Selected Payment Method:
 </b>
 
 </div>
-
 
 <div class="amount">
 
@@ -3079,12 +3145,12 @@ Payment Amount
 
 </div>
 
-
 <a
-    class="telegram"
-    href="{{ telegram_url }}"
-    target="_blank"
-    rel="noopener noreferrer"
+class="telegram"
+href="{{ telegram_url }}"
+target="_blank"
+rel="noopener noreferrer"
+
 >
 
 <div class="telegram-logo">
@@ -3105,7 +3171,6 @@ Open Telegram Support
 
 </a>
 
-
 <div class="note">
 
 Payment verification is handled manually.
@@ -3116,17 +3181,15 @@ information or screenshot to
 
 </div>
 
-
 <a
-    class="back"
-    href="{{ url_for('activate') }}"
->
-← Back to Activation
-</a>
+class="back"
+href="{{ url_for('activate') }}"
 
+>
+
+← Back to Activation </a>
 
 </div>
-
 
 </body>
 
@@ -3135,12 +3198,15 @@ information or screenshot to
 """
 
 # =========================================================
+
 # FORGOT PASSWORD
+
 # =========================================================
 
 FORGOT_HTML = """
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -3148,8 +3214,9 @@ FORGOT_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Password Recovery</title>
@@ -3180,24 +3247,20 @@ Password Recovery
 
 </div>
 
-
 <div class="card">
 
 <div class="card-icon">
 ↻
 </div>
 
-
 <h2>
 Reset Password
 </h2>
-
 
 <div class="subtitle">
 Use your username and assigned activation code
 to create a new password.
 </div>
-
 
 {% if error %}
 
@@ -3207,7 +3270,6 @@ to create a new password.
 
 {% endif %}
 
-
 {% if success %}
 
 <div class="success">
@@ -3216,9 +3278,7 @@ to create a new password.
 
 {% endif %}
 
-
 <form method="POST">
-
 
 <div class="field">
 
@@ -3227,15 +3287,15 @@ Username
 </label>
 
 <input
-    class="input"
-    type="text"
-    name="username"
-    placeholder="Your username"
-    required
+class="input"
+type="text"
+name="username"
+placeholder="Your username"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -3244,16 +3304,16 @@ Activation Code
 </label>
 
 <input
-    class="input"
-    type="text"
-    name="code"
-    placeholder="Your activation code"
-    autocomplete="off"
-    required
+class="input"
+type="text"
+name="code"
+placeholder="Your activation code"
+autocomplete="off"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -3262,15 +3322,15 @@ New Password
 </label>
 
 <input
-    class="input"
-    type="password"
-    name="password"
-    placeholder="Create new password"
-    required
+class="input"
+type="password"
+name="password"
+placeholder="Create new password"
+required
+
 >
 
 </div>
-
 
 <div class="field">
 
@@ -3279,32 +3339,32 @@ Confirm New Password
 </label>
 
 <input
-    class="input"
-    type="password"
-    name="confirm_password"
-    placeholder="Confirm new password"
-    required
+class="input"
+type="password"
+name="confirm_password"
+placeholder="Confirm new password"
+required
+
 >
 
 </div>
 
-
 <button
-    class="main-button"
-    type="submit"
->
-RESET PASSWORD
-</button>
+class="main-button"
+type="submit"
 
+>
+
+RESET PASSWORD </button>
 
 </form>
 
-
 <a
-    class="support-box"
-    href="{{ telegram_url }}"
-    target="_blank"
-    rel="noopener noreferrer"
+class="support-box"
+href="{{ telegram_url }}"
+target="_blank"
+rel="noopener noreferrer"
+
 >
 
 <span class="telegram-icon">
@@ -3325,30 +3385,24 @@ Need Help?
 
 </a>
 
-
 <div class="links"
      style="justify-content:center;">
 
 <a href="/login"
-   class="create-account-link">
-BACK TO LOGIN
-</a>
+class="create-account-link">
+BACK TO LOGIN </a>
 
 </div>
-
 
 <div class="security">
 Your activation code remains assigned to your account.
 </div>
 
-
 </div>
-
 
 <div class="footer">
 RS TRADER • PASSWORD RECOVERY
 </div>
-
 
 </div>
 
@@ -3359,11 +3413,15 @@ RS TRADER • PASSWORD RECOVERY
 """
 
 # =========================================================
+
 # DASHBOARD HTML
+
 # =========================================================
 
 DASHBOARD_HTML = """
+
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -3371,8 +3429,9 @@ DASHBOARD_HTML = """
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>RS Trader • Money Management</title>
@@ -4261,79 +4320,78 @@ button:hover{
 
 </head>
 
-
 <body>
 
 <div class="container">
-
 
 <!-- HEADER -->
 
 <div class="header">
 
-    <div class="logo-area">
+```
+<div class="logo-area">
 
-        <div class="logo">
-            RS
-        </div>
-
-        <div class="title">
-
-            <h1>
-                RS Trader
-            </h1>
-
-            <p>
-                Money Management System
-            </p>
-
-        </div>
-
+    <div class="logo">
+        RS
     </div>
 
+    <div class="title">
 
-    <div class="header-right">
+        <h1>
+            RS Trader
+        </h1>
 
-
-        <a
-            class="telegram"
-            href="{{ telegram_url }}"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Contact RS Trader Support"
-        >
-
-            <span class="telegram-logo">
-                ➤
-            </span>
-
-            <span class="telegram-text">
-
-                <span class="telegram-title">
-                    Support Telegram
-                </span>
-
-                <span class="telegram-user">
-                    {{ telegram_username }}
-                </span>
-
-            </span>
-
-        </a>
-
-
-        <div class="active">
-
-            <span class="active-dot"></span>
-
-            ACTIVE
-
-        </div>
+        <p>
+            Money Management System
+        </p>
 
     </div>
 
 </div>
 
+
+<div class="header-right">
+
+
+    <a
+        class="telegram"
+        href="{{ telegram_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Contact RS Trader Support"
+    >
+
+        <span class="telegram-logo">
+            ➤
+        </span>
+
+        <span class="telegram-text">
+
+            <span class="telegram-title">
+                Support Telegram
+            </span>
+
+            <span class="telegram-user">
+                {{ telegram_username }}
+            </span>
+
+        </span>
+
+    </a>
+
+
+    <div class="active">
+
+        <span class="active-dot"></span>
+
+        ACTIVE
+
+    </div>
+
+</div>
+```
+
+</div>
 
 {% if error %}
 
@@ -4343,513 +4401,516 @@ button:hover{
 
 {% endif %}
 
-
 <!-- MAIN CARDS -->
 
 <div class="cards">
 
+```
+<div class="card">
 
-    <div class="card">
-
-        <div class="card-label">
-            Balance
-        </div>
-
-        <div class="card-value">
-            ${{ "%.2f"|format(calculator.balance) }}
-        </div>
-
+    <div class="card-label">
+        Balance
     </div>
 
-
-    <div class="card">
-
-        <div class="card-label">
-            Total P/L
-        </div>
-
-        <div class="card-value
-            {% if calculator.total_profit_loss >= 0 %}
-                green
-            {% else %}
-                red
-            {% endif %}
-        ">
-
-            {% if calculator.total_profit_loss >= 0 %}
-                +
-            {% endif %}
-
-            ${{ "%.2f"|format(
-                calculator.total_profit_loss
-            ) }}
-
-        </div>
-
+    <div class="card-value">
+        ${{ "%.2f"|format(calculator.balance) }}
     </div>
 
+</div>
 
-    <div class="card next-card">
 
-        <div class="card-label">
-            Next Trade
-        </div>
+<div class="card">
 
-        <div class="card-value next-value">
-
-            ${{ "%.2f"|format(
-                calculator.calculate_next_amount()
-            ) }}
-
-        </div>
-
+    <div class="card-label">
+        Total P/L
     </div>
 
+    <div class="card-value
+        {% if calculator.total_profit_loss >= 0 %}
+            green
+        {% else %}
+            red
+        {% endif %}
+    ">
 
-    <div class="card">
+        {% if calculator.total_profit_loss >= 0 %}
+            +
+        {% endif %}
 
-        <div class="card-label">
-            Profit Target
-        </div>
-
-        <div class="card-value blue">
-
-            ${{ "%.2f"|format(
-                calculator.profit_target_amount
-            ) }}
-
-        </div>
+        ${{ "%.2f"|format(
+            calculator.total_profit_loss
+        ) }}
 
     </div>
 
 </div>
 
+
+<div class="card next-card">
+
+    <div class="card-label">
+        Next Trade
+    </div>
+
+    <div class="card-value next-value">
+
+        ${{ "%.2f"|format(
+            calculator.calculate_next_amount()
+        ) }}
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="card-label">
+        Profit Target
+    </div>
+
+    <div class="card-value blue">
+
+        ${{ "%.2f"|format(
+            calculator.profit_target_amount
+        ) }}
+
+    </div>
+
+</div>
+```
+
+</div>
 
 <!-- STATUS -->
 
 <div class="status-box">
 
-    <div>
+```
+<div>
 
-        <div class="status-title">
-            Session Status
-        </div>
-
-        <div class="status-value">
-
-            {% if calculator.session_stopped %}
-
-                <span class="red">
-                    {{ calculator.get_status() }}
-                </span>
-
-            {% elif calculator.loss_streak > 0 %}
-
-                <span class="yellow">
-                    {{ calculator.get_status() }}
-                </span>
-
-            {% else %}
-
-                <span class="green">
-                    {{ calculator.get_status() }}
-                </span>
-
-            {% endif %}
-
-        </div>
-
+    <div class="status-title">
+        Session Status
     </div>
 
+    <div class="status-value">
 
-    <div>
+        {% if calculator.session_stopped %}
 
-        <div class="status-title">
-            Stop Loss
-        </div>
+            <span class="red">
+                {{ calculator.get_status() }}
+            </span>
 
-        <div class="status-value red">
+        {% elif calculator.loss_streak > 0 %}
 
-            ${{ "%.2f"|format(
-                calculator.stop_loss_amount
-            ) }}
+            <span class="yellow">
+                {{ calculator.get_status() }}
+            </span>
 
-        </div>
+        {% else %}
+
+            <span class="green">
+                {{ calculator.get_status() }}
+            </span>
+
+        {% endif %}
 
     </div>
 
 </div>
 
+
+<div>
+
+    <div class="status-title">
+        Stop Loss
+    </div>
+
+    <div class="status-value red">
+
+        ${{ "%.2f"|format(
+            calculator.stop_loss_amount
+        ) }}
+
+    </div>
+
+</div>
+```
+
+</div>
 
 <!-- STATISTICS -->
 
 <div class="stats">
 
+```
+<div class="stat">
 
-    <div class="stat">
-
-        <div class="stat-label">
-            Trades
-        </div>
-
-        <div class="stat-value">
-            {{ calculator.trade_number }}
-        </div>
-
+    <div class="stat-label">
+        Trades
     </div>
 
-
-    <div class="stat">
-
-        <div class="stat-label">
-            Wins
-        </div>
-
-        <div class="stat-value green">
-            {{ calculator.win_count }}
-        </div>
-
-    </div>
-
-
-    <div class="stat">
-
-        <div class="stat-label">
-            Losses
-        </div>
-
-        <div class="stat-value red">
-            {{ calculator.loss_count }}
-        </div>
-
-    </div>
-
-
-    <div class="stat">
-
-        <div class="stat-label">
-            Win Rate
-        </div>
-
-        <div class="stat-value blue">
-
-            {% if calculator.trade_number > 0 %}
-
-                {{ "%.1f"|format(
-                    (calculator.win_count /
-                    calculator.trade_number) * 100
-                ) }}%
-
-            {% else %}
-
-                0.0%
-
-            {% endif %}
-
-        </div>
-
+    <div class="stat-value">
+        {{ calculator.trade_number }}
     </div>
 
 </div>
 
+
+<div class="stat">
+
+    <div class="stat-label">
+        Wins
+    </div>
+
+    <div class="stat-value green">
+        {{ calculator.win_count }}
+    </div>
+
+</div>
+
+
+<div class="stat">
+
+    <div class="stat-label">
+        Losses
+    </div>
+
+    <div class="stat-value red">
+        {{ calculator.loss_count }}
+    </div>
+
+</div>
+
+
+<div class="stat">
+
+    <div class="stat-label">
+        Win Rate
+    </div>
+
+    <div class="stat-value blue">
+
+        {% if calculator.trade_number > 0 %}
+
+            {{ "%.1f"|format(
+                (calculator.win_count /
+                calculator.trade_number) * 100
+            ) }}%
+
+        {% else %}
+
+            0.0%
+
+        {% endif %}
+
+    </div>
+
+</div>
+```
+
+</div>
 
 <!-- TRADE CONTROL -->
 
 <div class="panel">
 
-    <h2 class="panel-title">
-        Trade Control
-    </h2>
+```
+<h2 class="panel-title">
+    Trade Control
+</h2>
 
-    <p class="panel-subtitle">
-        Record your latest trading result
-    </p>
-
-
-    <form
-        method="POST"
-        action="/trade"
-    >
-
-        <div class="trade-buttons">
-
-            <button
-                class="win"
-                type="submit"
-                name="result"
-                value="WIN"
-            >
-                ✓ &nbsp; WIN
-            </button>
+<p class="panel-subtitle">
+    Record your latest trading result
+</p>
 
 
-            <button
-                class="loss"
-                type="submit"
-                name="result"
-                value="LOSS"
-            >
-                ✕ &nbsp; LOSS
-            </button>
+<form
+    method="POST"
+    action="/trade"
+>
 
-        </div>
+    <div class="trade-buttons">
 
-    </form>
+        <button
+            class="win"
+            type="submit"
+            name="result"
+            value="WIN"
+        >
+            ✓ &nbsp; WIN
+        </button>
+
+
+        <button
+            class="loss"
+            type="submit"
+            name="result"
+            value="LOSS"
+        >
+            ✕ &nbsp; LOSS
+        </button>
+
+    </div>
+
+</form>
+```
 
 </div>
-
 
 <!-- SETTINGS -->
 
 <div class="panel settings-panel">
 
+```
+<div class="settings-top">
 
-    <div class="settings-top">
+    <div>
 
-        <div>
-
-            <div class="settings-badge">
-                RISK CONTROL
-            </div>
-
-            <h2 class="panel-title">
-                Money Management
-            </h2>
-
-            <p class="panel-subtitle">
-                Configure your trading risk parameters
-            </p>
-
+        <div class="settings-badge">
+            RISK CONTROL
         </div>
 
+        <h2 class="panel-title">
+            Money Management
+        </h2>
 
-        <div class="settings-icon">
-            ⚙
-        </div>
+        <p class="panel-subtitle">
+            Configure your trading risk parameters
+        </p>
 
     </div>
 
 
-    <form
-        method="POST"
-        action="/settings"
-    >
+    <div class="settings-icon">
+        ⚙
+    </div>
+
+</div>
 
 
-        <div class="settings-grid">
+<form
+    method="POST"
+    action="/settings"
+>
 
 
-            <div class="setting-field">
-
-                <label>
-                    Starting Capital
-                </label>
-
-                <div class="input-wrap">
-
-                    <span class="input-icon">
-                        $
-                    </span>
-
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="starting_capital"
-                        value="{{ calculator.starting_capital }}"
-                    >
-
-                    <span class="input-unit">
-                        USD
-                    </span>
-
-                </div>
-
-            </div>
+    <div class="settings-grid">
 
 
-            <div class="setting-field">
+        <div class="setting-field">
 
-                <label>
-                    Payout
-                </label>
+            <label>
+                Starting Capital
+            </label>
 
-                <div class="input-wrap">
+            <div class="input-wrap">
 
-                    <span class="input-icon">
-                        ↗
-                    </span>
+                <span class="input-icon">
+                    $
+                </span>
 
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="payout"
-                        value="{{ calculator.payout * 100 }}"
-                    >
+                <input
+                    type="number"
+                    step="0.01"
+                    name="starting_capital"
+                    value="{{ calculator.starting_capital }}"
+                >
 
-                    <span class="input-unit">
-                        %
-                    </span>
-
-                </div>
+                <span class="input-unit">
+                    USD
+                </span>
 
             </div>
-
-
-            <div class="setting-field">
-
-                <label>
-                    Profit Target
-                </label>
-
-                <div class="input-wrap">
-
-                    <span class="input-icon">
-                        ✓
-                    </span>
-
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="profit_target_percent"
-                        value="{{ calculator.profit_target_percent }}"
-                    >
-
-                    <span class="input-unit">
-                        %
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="setting-field">
-
-                <label>
-                    Stop Loss
-                </label>
-
-                <div class="input-wrap">
-
-                    <span class="input-icon">
-                        !
-                    </span>
-
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="stop_loss_percent"
-                        value="{{ calculator.stop_loss_percent }}"
-                    >
-
-                    <span class="input-unit">
-                        %
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="setting-field">
-
-                <label>
-                    Max Loss Streak
-                </label>
-
-                <div class="input-wrap">
-
-                    <span class="input-icon">
-                        ↻
-                    </span>
-
-                    <input
-                        type="number"
-                        name="max_loss_streak"
-                        value="{{ calculator.max_loss_streak }}"
-                    >
-
-                    <span class="input-unit">
-                        TRADES
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="setting-field">
-
-                <label>
-                    Base Risk
-                </label>
-
-                <div class="input-wrap">
-
-                    <span class="input-icon">
-                        ◈
-                    </span>
-
-                    <input
-                        type="number"
-                        step="0.01"
-                        name="base_risk_percent"
-                        value="{{ calculator.base_risk_percent }}"
-                    >
-
-                    <span class="input-unit">
-                        %
-                    </span>
-
-                </div>
-
-            </div>
-
 
         </div>
 
 
-        <button
-            class="settings-save"
-            type="submit"
-        >
-            ✓ &nbsp; Save Configuration
-        </button>
+        <div class="setting-field">
+
+            <label>
+                Payout
+            </label>
+
+            <div class="input-wrap">
+
+                <span class="input-icon">
+                    ↗
+                </span>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="payout"
+                    value="{{ calculator.payout * 100 }}"
+                >
+
+                <span class="input-unit">
+                    %
+                </span>
+
+            </div>
+
+        </div>
 
 
-    </form>
+        <div class="setting-field">
+
+            <label>
+                Profit Target
+            </label>
+
+            <div class="input-wrap">
+
+                <span class="input-icon">
+                    ✓
+                </span>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="profit_target_percent"
+                    value="{{ calculator.profit_target_percent }}"
+                >
+
+                <span class="input-unit">
+                    %
+                </span>
+
+            </div>
+
+        </div>
 
 
-    <form
-        method="POST"
-        action="/reset"
+        <div class="setting-field">
+
+            <label>
+                Stop Loss
+            </label>
+
+            <div class="input-wrap">
+
+                <span class="input-icon">
+                    !
+                </span>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="stop_loss_percent"
+                    value="{{ calculator.stop_loss_percent }}"
+                >
+
+                <span class="input-unit">
+                    %
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="setting-field">
+
+            <label>
+                Max Loss Streak
+            </label>
+
+            <div class="input-wrap">
+
+                <span class="input-icon">
+                    ↻
+                </span>
+
+                <input
+                    type="number"
+                    name="max_loss_streak"
+                    value="{{ calculator.max_loss_streak }}"
+                >
+
+                <span class="input-unit">
+                    TRADES
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="setting-field">
+
+            <label>
+                Base Risk
+            </label>
+
+            <div class="input-wrap">
+
+                <span class="input-icon">
+                    ◈
+                </span>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="base_risk_percent"
+                    value="{{ calculator.base_risk_percent }}"
+                >
+
+                <span class="input-unit">
+                    %
+                </span>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <button
+        class="settings-save"
+        type="submit"
     >
+        ✓ &nbsp; Save Configuration
+    </button>
 
-        <button
-            class="reset"
-            type="submit"
-        >
-            Reset Session
-        </button>
 
-    </form>
+</form>
 
+
+<form
+    method="POST"
+    action="/reset"
+>
+
+    <button
+        class="reset"
+        type="submit"
+    >
+        Reset Session
+    </button>
+
+</form>
+```
 
 </div>
 
-
 <a
-    class="logout"
-    href="/logout"
->
-    SIGN OUT
-</a>
+class="logout"
+href="/logout"
 
+>
+
+```
+SIGN OUT
+```
+
+</a>
 
 <div class="footer">
     RS TRADER • MONEY MANAGEMENT
 </div>
-
 
 </div>
 
@@ -4858,70 +4919,681 @@ button:hover{
 </html>
 """
 
-
 # =========================================================
+
 # ROOT
+
 # =========================================================
 
 @app.route("/")
 def root():
 
-    if not session.get("logged_in"):
+```
+if not session.get("logged_in"):
 
-        return redirect(
-            url_for("login")
-        )
+    return redirect(
+        url_for("login")
+    )
 
-    if not session.get("activated"):
+if not session.get("activated"):
 
-        return redirect(
-            url_for("activate")
-        )
+    return redirect(
+        url_for("activate")
+    )
+
+return redirect(
+    url_for("dashboard")
+)
+```
+
+# =========================================================
+
+# LOGIN
+
+# =========================================================
+
+@app.route(
+"/login",
+methods=["GET", "POST"]
+)
+def login():
+
+```
+if (
+    session.get("logged_in")
+    and
+    session.get("activated")
+):
 
     return redirect(
         url_for("dashboard")
     )
 
 
+error = None
+success = None
+
+
+if request.method == "POST":
+
+    username = request.form.get(
+        "username",
+        ""
+    ).strip()
+
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+
+    conn = get_db()
+
+    user = conn.execute(
+
+        """
+        SELECT *
+        FROM users
+        WHERE username = ?
+        """,
+
+        (
+            username,
+        )
+
+    ).fetchone()
+
+    conn.close()
+
+
+    if (
+        user
+        and
+        check_password_hash(
+            user["password_hash"],
+            password
+        )
+    ):
+
+        session["logged_in"] = True
+
+        session["username"] = (
+            user["username"]
+        )
+
+
+        if user["activation_code"]:
+
+            session["activated"] = True
+
+            return redirect(
+                url_for("dashboard")
+            )
+
+
+        session["activated"] = False
+
+        return redirect(
+            url_for("activate")
+        )
+
+
+    error = (
+        "Invalid username or password."
+    )
+
+
+return render_template_string(
+
+    LOGIN_HTML,
+
+    error=error,
+
+    success=success,
+
+    telegram_username=
+        TELEGRAM_USERNAME,
+
+    telegram_url=
+        TELEGRAM_URL,
+
+    telegram_svg=
+        TELEGRAM_SVG,
+
+)
+```
+
 # =========================================================
-# LOGIN
+
+# REGISTER
+
 # =========================================================
 
 @app.route(
-    "/login",
-    methods=["GET", "POST"]
+"/register",
+methods=["GET", "POST"]
 )
-def login():
+def register():
 
-    if (
-        session.get("logged_in")
-        and
-        session.get("activated")
+```
+if session.get("logged_in"):
+
+    return redirect(
+        url_for("root")
+    )
+
+
+error = None
+
+
+if request.method == "POST":
+
+    username = request.form.get(
+        "username",
+        ""
+    ).strip()
+
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    confirm_password = request.form.get(
+        "confirm_password",
+        ""
+    )
+
+
+    if not valid_username(
+        username
     ):
+
+        error = (
+            "Username must be 3–30 characters "
+            "and may contain letters, numbers, "
+            "_, - or ."
+        )
+
+
+    elif not valid_password(
+        password
+    ):
+
+        error = (
+            "Password must contain at least 6 characters."
+        )
+
+
+    elif password != confirm_password:
+
+        error = (
+            "Passwords do not match."
+        )
+
+
+    else:
+
+        conn = get_db()
+
+
+        existing = conn.execute(
+
+            """
+            SELECT id
+            FROM users
+            WHERE LOWER(username) = LOWER(?)
+            """,
+
+            (
+                username,
+            )
+
+        ).fetchone()
+
+
+        if existing:
+
+            conn.close()
+
+            error = (
+                "This username is already taken."
+            )
+
+        else:
+
+            password_hash = (
+                generate_password_hash(
+                    password
+                )
+            )
+
+
+            conn.execute(
+
+                """
+                INSERT INTO users
+                (
+                    username,
+                    password_hash,
+                    activation_code
+                )
+                VALUES (?, ?, ?)
+                """,
+
+                (
+                    username,
+                    password_hash,
+                    None
+                )
+
+            )
+
+
+            conn.commit()
+
+            conn.close()
+
+
+            session.clear()
+
+            session["logged_in"] = True
+
+            session["username"] = (
+                username
+            )
+
+            session["activated"] = False
+
+
+            return redirect(
+                url_for("activate")
+            )
+
+
+return render_template_string(
+
+    REGISTER_HTML,
+
+    error=error,
+
+    telegram_username=
+        TELEGRAM_USERNAME,
+
+    telegram_url=
+        TELEGRAM_URL,
+
+    telegram_svg=
+        TELEGRAM_SVG,
+
+)
+```
+
+# =========================================================
+
+# ACTIVATION
+
+# =========================================================
+
+@app.route(
+"/activate",
+methods=["GET", "POST"]
+)
+def activate():
+
+```
+if not session.get("logged_in"):
+
+    return redirect(
+        url_for("login")
+    )
+
+
+username = session.get(
+    "username"
+)
+
+
+if session.get("activated"):
+
+    return redirect(
+        url_for("dashboard")
+    )
+
+
+error = None
+
+
+if request.method == "POST":
+
+    code = request.form.get(
+        "code",
+        ""
+    ).strip().upper()
+
+
+    conn = get_db()
+
+
+    row = conn.execute(
+
+        """
+        SELECT *
+        FROM activation_codes
+        WHERE code = ?
+        """,
+
+        (
+            code,
+        )
+
+    ).fetchone()
+
+
+    if row is None:
+
+        conn.close()
+
+        error = (
+            "Invalid activation code."
+        )
+
+
+    elif (
+
+        row["used"] == 1
+
+        and
+        row["owner_username"]
+
+        and
+        row["owner_username"] != username
+
+    ):
+
+        conn.close()
+
+        error = (
+            "This activation code is already "
+            "assigned to another account."
+        )
+
+
+    elif (
+
+        row["used"] == 1
+
+        and
+        row["owner_username"] == username
+
+    ):
+
+        conn.close()
+
+        session["activated"] = True
 
         return redirect(
             url_for("dashboard")
         )
 
 
-    error = None
-    success = None
+    else:
 
+        conn.execute(
 
-    if request.method == "POST":
+            """
+            UPDATE activation_codes
 
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
+            SET
+                used = 1,
+                owner_username = ?
 
-        password = request.form.get(
-            "password",
-            ""
+            WHERE id = ?
+
+            """,
+
+            (
+                username,
+                row["id"]
+            )
+
         )
 
 
+        conn.execute(
+
+            """
+            UPDATE users
+
+            SET activation_code = ?
+
+            WHERE username = ?
+
+            """,
+
+            (
+                code,
+                username
+            )
+
+        )
+
+
+        conn.commit()
+
+        conn.close()
+
+
+        session["activated"] = True
+
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+
+return render_template_string(
+
+    ACTIVATE_HTML,
+
+    error=error,
+
+    telegram_username=
+        TELEGRAM_USERNAME,
+
+    telegram_url=
+        TELEGRAM_URL,
+
+    telegram_svg=
+        TELEGRAM_SVG,
+
+    lock_svg=
+        LOCK_SVG,
+
+    check_svg=
+        CHECK_SVG,
+
+    bkash_svg=
+        BKASH_SVG,
+
+    nagad_svg=
+        NAGAD_SVG,
+
+    binance_svg=
+        BINANCE_SVG
+
+)
+```
+
+# =========================================================
+
+# PAYMENT CONFIRMATION
+
+# =========================================================
+
+@app.route(
+"/payment-confirm",
+methods=["POST"]
+)
+def payment_confirm():
+
+```
+if not session.get("logged_in"):
+
+    return redirect(
+        url_for("login")
+    )
+
+
+if session.get("activated"):
+
+    return redirect(
+        url_for("dashboard")
+    )
+
+
+method = request.form.get(
+    "method",
+    ""
+).strip().lower()
+
+
+if method not in PAYMENT_METHODS:
+
+    return redirect(
+        url_for("activate")
+    )
+
+
+payment = PAYMENT_METHODS[
+    method
+]
+
+
+username = session.get(
+    "username",
+    ""
+)
+
+
+conn = get_db()
+
+
+conn.execute(
+
+    """
+    INSERT INTO payment_requests
+    (
+        username,
+        method,
+        account,
+        amount
+    )
+    VALUES (?, ?, ?, ?)
+    """,
+
+    (
+        username,
+
+        method,
+
+        payment["account"],
+
+        payment["amount"]
+    )
+
+)
+
+
+conn.commit()
+
+conn.close()
+
+
+return render_template_string(
+
+    PAYMENT_CONTACT_HTML,
+
+    payment_method=
+        payment["name"],
+
+    payment_amount=
+        payment["amount"],
+
+    telegram_username=
+        TELEGRAM_USERNAME,
+
+    telegram_url=
+        TELEGRAM_URL,
+
+    telegram_svg=
+        TELEGRAM_SVG,
+
+    check_svg=
+        CHECK_SVG
+
+)
+```
+
+# =========================================================
+
+# FORGOT PASSWORD
+
+# =========================================================
+
+@app.route(
+"/forgot-password",
+methods=["GET", "POST"]
+)
+def forgot_password():
+
+```
+error = None
+success = None
+
+
+if request.method == "POST":
+
+    username = request.form.get(
+        "username",
+        ""
+    ).strip()
+
+    code = request.form.get(
+        "code",
+        ""
+    ).strip().upper()
+
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    confirm_password = request.form.get(
+        "confirm_password",
+        ""
+    )
+
+
+    if not valid_password(
+        password
+    ):
+
+        error = (
+            "New password must contain at least 6 characters."
+        )
+
+
+    elif password != confirm_password:
+
+        error = (
+            "Passwords do not match."
+        )
+
+
+    else:
+
         conn = get_db()
+
 
         user = conn.execute(
 
@@ -4937,353 +5609,43 @@ def login():
 
         ).fetchone()
 
-        conn.close()
 
-
-        if (
-            user
-            and
-            check_password_hash(
-                user["password_hash"],
-                password
-            )
-        ):
-
-            session["logged_in"] = True
-
-            session["username"] = (
-                user["username"]
-            )
-
-
-            if user["activation_code"]:
-
-                session["activated"] = True
-
-                return redirect(
-                    url_for("dashboard")
-                )
-
-
-            session["activated"] = False
-
-            return redirect(
-                url_for("activate")
-            )
-
-
-        error = (
-            "Invalid username or password."
-        )
-
-
-    return render_template_string(
-
-        LOGIN_HTML,
-
-        error=error,
-
-        success=success,
-
-        telegram_username=
-            TELEGRAM_USERNAME,
-
-        telegram_url=
-            TELEGRAM_URL,
-
-        telegram_svg=
-            TELEGRAM_SVG,
-
-    )
-
-
-# =========================================================
-# REGISTER
-# =========================================================
-
-@app.route(
-    "/register",
-    methods=["GET", "POST"]
-)
-def register():
-
-    if session.get("logged_in"):
-
-        return redirect(
-            url_for("root")
-        )
-
-
-    error = None
-
-
-    if request.method == "POST":
-
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "password",
-            ""
-        )
-
-        confirm_password = request.form.get(
-            "confirm_password",
-            ""
-        )
-
-
-        if not valid_username(
-            username
-        ):
-
-            error = (
-                "Username must be 3–30 characters "
-                "and may contain letters, numbers, "
-                "_, - or ."
-            )
-
-
-        elif not valid_password(
-            password
-        ):
-
-            error = (
-                "Password must contain at least 6 characters."
-            )
-
-
-        elif password != confirm_password:
-
-            error = (
-                "Passwords do not match."
-            )
-
-
-        else:
-
-            conn = get_db()
-
-
-            existing = conn.execute(
-
-                """
-                SELECT id
-                FROM users
-                WHERE LOWER(username) = LOWER(?)
-                """,
-
-                (
-                    username,
-                )
-
-            ).fetchone()
-
-
-            if existing:
-
-                conn.close()
-
-                error = (
-                    "This username is already taken."
-                )
-
-            else:
-
-                password_hash = (
-                    generate_password_hash(
-                        password
-                    )
-                )
-
-
-                conn.execute(
-
-                    """
-                    INSERT INTO users
-                    (
-                        username,
-                        password_hash,
-                        activation_code
-                    )
-                    VALUES (?, ?, ?)
-                    """,
-
-                    (
-                        username,
-                        password_hash,
-                        None
-                    )
-
-                )
-
-
-                conn.commit()
-
-                conn.close()
-
-
-                session.clear()
-
-                session["logged_in"] = True
-
-                session["username"] = (
-                    username
-                )
-
-                session["activated"] = False
-
-
-                return redirect(
-                    url_for("activate")
-                )
-
-
-    return render_template_string(
-
-        REGISTER_HTML,
-
-        error=error,
-
-        telegram_username=
-            TELEGRAM_USERNAME,
-
-        telegram_url=
-            TELEGRAM_URL,
-
-        telegram_svg=
-            TELEGRAM_SVG,
-
-    )
-
-
-# =========================================================
-# ACTIVATION
-# =========================================================
-
-@app.route(
-    "/activate",
-    methods=["GET", "POST"]
-)
-def activate():
-
-    if not session.get("logged_in"):
-
-        return redirect(
-            url_for("login")
-        )
-
-
-    username = session.get(
-        "username"
-    )
-
-
-    if session.get("activated"):
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    error = None
-
-
-    if request.method == "POST":
-
-        code = request.form.get(
-            "code",
-            ""
-        ).strip().upper()
-
-
-        conn = get_db()
-
-
-        row = conn.execute(
+        activation = conn.execute(
 
             """
             SELECT *
             FROM activation_codes
             WHERE code = ?
+            AND used = 1
+            AND owner_username = ?
             """,
 
             (
                 code,
+                username
             )
 
         ).fetchone()
 
 
-        if row is None:
-
-            conn.close()
-
-            error = (
-                "Invalid activation code."
-            )
-
-
-        elif (
-
-            row["used"] == 1
-
-            and
-            row["owner_username"]
-
-            and
-            row["owner_username"] != username
-
+        if (
+            user is None
+            or
+            activation is None
         ):
 
             conn.close()
 
             error = (
-                "This activation code is already "
-                "assigned to another account."
+                "Username or activation code is incorrect."
             )
-
-
-        elif (
-
-            row["used"] == 1
-
-            and
-            row["owner_username"] == username
-
-        ):
-
-            conn.close()
-
-            session["activated"] = True
-
-            return redirect(
-                url_for("dashboard")
-            )
-
 
         else:
 
-            conn.execute(
-
-                """
-                UPDATE activation_codes
-
-                SET
-                    used = 1,
-                    owner_username = ?
-
-                WHERE id = ?
-
-                """,
-
-                (
-                    username,
-                    row["id"]
+            new_hash = (
+                generate_password_hash(
+                    password
                 )
-
             )
 
 
@@ -5291,15 +5653,12 @@ def activate():
 
                 """
                 UPDATE users
-
-                SET activation_code = ?
-
+                SET password_hash = ?
                 WHERE username = ?
-
                 """,
 
                 (
-                    code,
+                    new_hash,
                     username
                 )
 
@@ -5311,336 +5670,127 @@ def activate():
             conn.close()
 
 
-            session["activated"] = True
-
-
-            return redirect(
-                url_for("dashboard")
+            success = (
+                "Password reset successfully. "
+                "You can now sign in."
             )
 
 
-    return render_template_string(
+return render_template_string(
 
-        ACTIVATE_HTML,
+    FORGOT_HTML,
 
-        error=error,
+    error=error,
 
-        telegram_username=
-            TELEGRAM_USERNAME,
+    success=success,
 
-        telegram_url=
-            TELEGRAM_URL,
+    telegram_username=
+        TELEGRAM_USERNAME,
 
-        telegram_svg=
-            TELEGRAM_SVG,
+    telegram_url=
+        TELEGRAM_URL,
 
-        lock_svg=
-            LOCK_SVG,
+    telegram_svg=
+        TELEGRAM_SVG,
 
-        check_svg=
-            CHECK_SVG,
+    check_svg=
+        CHECK_SVG
 
-        bkash_svg=
-            BKASH_SVG,
-
-        nagad_svg=
-            NAGAD_SVG,
-
-        binance_svg=
-            BINANCE_SVG
-
-    )
-
-
-# =========================================================
-# PAYMENT CONFIRMATION
-# =========================================================
-
-@app.route(
-    "/payment-confirm",
-    methods=["POST"]
 )
-def payment_confirm():
-
-    if not session.get("logged_in"):
-
-        return redirect(
-            url_for("login")
-        )
-
-
-    if session.get("activated"):
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    method = request.form.get(
-        "method",
-        ""
-    ).strip().lower()
-
-
-    if method not in PAYMENT_METHODS:
-
-        return redirect(
-            url_for("activate")
-        )
-
-
-    payment = PAYMENT_METHODS[
-        method
-    ]
-
-
-    username = session.get(
-        "username",
-        ""
-    )
-
-
-    conn = get_db()
-
-
-    conn.execute(
-
-        """
-        INSERT INTO payment_requests
-        (
-            username,
-            method,
-            account,
-            amount
-        )
-        VALUES (?, ?, ?, ?)
-        """,
-
-        (
-            username,
-
-            method,
-
-            payment["account"],
-
-            payment["amount"]
-        )
-
-    )
-
-
-    conn.commit()
-
-    conn.close()
-
-
-    return render_template_string(
-
-        PAYMENT_CONTACT_HTML,
-
-        payment_method=
-            payment["name"],
-
-        payment_amount=
-            payment["amount"],
-
-        telegram_username=
-            TELEGRAM_USERNAME,
-
-        telegram_url=
-            TELEGRAM_URL,
-
-        telegram_svg=
-            TELEGRAM_SVG,
-
-        check_svg=
-            CHECK_SVG
-
-    )
-
+```
 
 # =========================================================
-# FORGOT PASSWORD
-# =========================================================
 
-@app.route(
-    "/forgot-password",
-    methods=["GET", "POST"]
-)
-def forgot_password():
-
-    error = None
-    success = None
-
-
-    if request.method == "POST":
-
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        code = request.form.get(
-            "code",
-            ""
-        ).strip().upper()
-
-        password = request.form.get(
-            "password",
-            ""
-        )
-
-        confirm_password = request.form.get(
-            "confirm_password",
-            ""
-        )
-
-
-        if not valid_password(
-            password
-        ):
-
-            error = (
-                "New password must contain at least 6 characters."
-            )
-
-
-        elif password != confirm_password:
-
-            error = (
-                "Passwords do not match."
-            )
-
-
-        else:
-
-            conn = get_db()
-
-
-            user = conn.execute(
-
-                """
-                SELECT *
-                FROM users
-                WHERE username = ?
-                """,
-
-                (
-                    username,
-                )
-
-            ).fetchone()
-
-
-            activation = conn.execute(
-
-                """
-                SELECT *
-                FROM activation_codes
-                WHERE code = ?
-                AND used = 1
-                AND owner_username = ?
-                """,
-
-                (
-                    code,
-                    username
-                )
-
-            ).fetchone()
-
-
-            if (
-                user is None
-                or
-                activation is None
-            ):
-
-                conn.close()
-
-                error = (
-                    "Username or activation code is incorrect."
-                )
-
-            else:
-
-                new_hash = (
-                    generate_password_hash(
-                        password
-                    )
-                )
-
-
-                conn.execute(
-
-                    """
-                    UPDATE users
-                    SET password_hash = ?
-                    WHERE username = ?
-                    """,
-
-                    (
-                        new_hash,
-                        username
-                    )
-
-                )
-
-
-                conn.commit()
-
-                conn.close()
-
-
-                success = (
-                    "Password reset successfully. "
-                    "You can now sign in."
-                )
-
-
-    return render_template_string(
-
-        FORGOT_HTML,
-
-        error=error,
-
-        success=success,
-
-        telegram_username=
-            TELEGRAM_USERNAME,
-
-        telegram_url=
-            TELEGRAM_URL,
-
-        telegram_svg=
-            TELEGRAM_SVG,
-
-        check_svg=
-            CHECK_SVG
-
-    )
-
-
-# =========================================================
 # DASHBOARD
+
 # =========================================================
 
 @app.route("/dashboard")
 def dashboard():
 
-    if not session.get("logged_in"):
+```
+if not session.get("logged_in"):
 
-        return redirect(
-            url_for("login")
-        )
+    return redirect(
+        url_for("login")
+    )
 
 
-    if not session.get("activated"):
+if not session.get("activated"):
 
-        return redirect(
-            url_for("activate")
-        )
+    return redirect(
+        url_for("activate")
+    )
 
+
+return render_template_string(
+
+    DASHBOARD_HTML,
+
+    calculator=calculator,
+
+    error=None,
+
+    telegram_username=
+        TELEGRAM_USERNAME,
+
+    telegram_url=
+        TELEGRAM_URL
+
+)
+```
+
+# =========================================================
+
+# TRADE
+
+# =========================================================
+
+@app.route(
+"/trade",
+methods=["POST"]
+)
+def trade():
+
+```
+if not login_required():
+
+    return redirect(
+        url_for("login")
+    )
+
+
+result = request.form.get(
+    "result",
+    ""
+).upper()
+
+
+if result not in (
+    "WIN",
+    "LOSS"
+):
+
+    return redirect(
+        url_for("dashboard")
+    )
+
+
+try:
+
+    calculator.record_trade(
+        result
+    )
+
+    return redirect(
+        url_for("dashboard")
+    )
+
+
+except (
+    ValueError,
+    RuntimeError
+) as error:
 
     return render_template_string(
 
@@ -5648,7 +5798,7 @@ def dashboard():
 
         calculator=calculator,
 
-        error=None,
+        error=str(error),
 
         telegram_username=
             TELEGRAM_USERNAME,
@@ -5657,254 +5807,143 @@ def dashboard():
             TELEGRAM_URL
 
     )
-
-
-# =========================================================
-# TRADE
-# =========================================================
-
-@app.route(
-    "/trade",
-    methods=["POST"]
-)
-def trade():
-
-    if not login_required():
-
-        return redirect(
-            url_for("login")
-        )
-
-
-    result = request.form.get(
-        "result",
-        ""
-    ).upper()
-
-
-    if result not in (
-        "WIN",
-        "LOSS"
-    ):
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    try:
-
-        calculator.record_trade(
-            result
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    except (
-        ValueError,
-        RuntimeError
-    ) as error:
-
-        return render_template_string(
-
-            DASHBOARD_HTML,
-
-            calculator=calculator,
-
-            error=str(error),
-
-            telegram_username=
-                TELEGRAM_USERNAME,
-
-            telegram_url=
-                TELEGRAM_URL
-
-        )
-
+```
 
 # =========================================================
+
 # SETTINGS
+
 # =========================================================
 
 @app.route(
-    "/settings",
-    methods=["POST"]
+"/settings",
+methods=["POST"]
 )
 def settings():
 
-    if not login_required():
+```
+if not login_required():
 
-        return redirect(
-            url_for("login")
+    return redirect(
+        url_for("login")
+    )
+
+
+try:
+
+    starting_capital = float(
+
+        request.form.get(
+            "starting_capital"
+        )
+
+    )
+
+
+    payout = float(
+
+        request.form.get(
+            "payout"
+        )
+
+    )
+
+
+    profit_target_percent = float(
+
+        request.form.get(
+            "profit_target_percent"
+        )
+
+    )
+
+
+    stop_loss_percent = float(
+
+        request.form.get(
+            "stop_loss_percent"
+        )
+
+    )
+
+
+    max_loss_streak = int(
+
+        request.form.get(
+            "max_loss_streak"
+        )
+
+    )
+
+
+    base_risk_percent = float(
+
+        request.form.get(
+            "base_risk_percent"
+        )
+
+    )
+
+
+    if starting_capital <= 0:
+
+        raise ValueError(
+            "Starting capital must be greater than 0."
         )
 
 
-    try:
+    if payout < 0:
 
-        starting_capital = float(
-
-            request.form.get(
-                "starting_capital"
-            )
-
+        raise ValueError(
+            "Payout cannot be negative."
         )
 
 
-        payout = float(
+    if profit_target_percent < 0:
 
-            request.form.get(
-                "payout"
-            )
-
+        raise ValueError(
+            "Profit target cannot be negative."
         )
 
 
-        profit_target_percent = float(
+    if stop_loss_percent < 0:
 
-            request.form.get(
-                "profit_target_percent"
-            )
-
+        raise ValueError(
+            "Stop loss cannot be negative."
         )
 
 
-        stop_loss_percent = float(
+    if max_loss_streak < 0:
 
-            request.form.get(
-                "stop_loss_percent"
-            )
-
+        raise ValueError(
+            "Max loss streak cannot be negative."
         )
 
 
-        max_loss_streak = int(
+    if base_risk_percent < 0:
 
-            request.form.get(
-                "max_loss_streak"
-            )
-
+        raise ValueError(
+            "Base risk cannot be negative."
         )
 
 
-        base_risk_percent = float(
+    calculator.update_settings(
 
-            request.form.get(
-                "base_risk_percent"
-            )
+        starting_capital,
 
-        )
+        payout,
 
+        profit_target_percent,
 
-        if starting_capital <= 0:
+        stop_loss_percent,
 
-            raise ValueError(
-                "Starting capital must be greater than 0."
-            )
+        max_loss_streak,
 
+        5,
 
-        if payout < 0:
+        base_risk_percent
 
-            raise ValueError(
-                "Payout cannot be negative."
-            )
-
-
-        if profit_target_percent < 0:
-
-            raise ValueError(
-                "Profit target cannot be negative."
-            )
-
-
-        if stop_loss_percent < 0:
-
-            raise ValueError(
-                "Stop loss cannot be negative."
-            )
-
-
-        if max_loss_streak < 0:
-
-            raise ValueError(
-                "Max loss streak cannot be negative."
-            )
-
-
-        if base_risk_percent < 0:
-
-            raise ValueError(
-                "Base risk cannot be negative."
-            )
-
-
-        calculator.update_settings(
-
-            starting_capital,
-
-            payout,
-
-            profit_target_percent,
-
-            stop_loss_percent,
-
-            max_loss_streak,
-
-            5,
-
-            base_risk_percent
-
-        )
-
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    except (
-        ValueError,
-        TypeError
-    ) as error:
-
-
-        return render_template_string(
-
-            DASHBOARD_HTML,
-
-            calculator=calculator,
-
-            error=str(error),
-
-            telegram_username=
-                TELEGRAM_USERNAME,
-
-            telegram_url=
-                TELEGRAM_URL
-
-        )
-
-
-# =========================================================
-# RESET
-# =========================================================
-
-@app.route(
-    "/reset",
-    methods=["POST"]
-)
-def reset():
-
-    if not login_required():
-
-        return redirect(
-            url_for("login")
-        )
-
-
-    calculator.reset()
+    )
 
 
     return redirect(
@@ -5912,42 +5951,103 @@ def reset():
     )
 
 
-# =========================================================
-# LOGOUT
+except (
+    ValueError,
+    TypeError
+) as error:
+
+
+    return render_template_string(
+
+        DASHBOARD_HTML,
+
+        calculator=calculator,
+
+        error=str(error),
+
+        telegram_username=
+            TELEGRAM_USERNAME,
+
+        telegram_url=
+            TELEGRAM_URL
+
+    )
+```
+
 # =========================================================
 
-@app.route("/logout")
-def logout():
+# RESET
 
-    session.clear()
+# =========================================================
+
+@app.route(
+"/reset",
+methods=["POST"]
+)
+def reset():
+
+```
+if not login_required():
 
     return redirect(
         url_for("login")
     )
 
 
+calculator.reset()
+
+
+return redirect(
+    url_for("dashboard")
+)
+```
+
 # =========================================================
+
+# LOGOUT
+
+# =========================================================
+
+@app.route("/logout")
+def logout():
+
+```
+session.clear()
+
+return redirect(
+    url_for("login")
+)
+```
+
+# =========================================================
+
 # HEALTH CHECK
+
 # =========================================================
 
 @app.route("/health")
 def health():
 
-    return {
-        "status": "ok",
-        "service": "RS Trader",
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
+```
+return {
+    "status": "ok",
+    "service": "RS Trader",
+    "timestamp": datetime.utcnow().isoformat()
+}
+```
 
 # =========================================================
+
 # 404
+
 # =========================================================
 
 @app.errorhandler(404)
 def not_found(error):
 
-    return """
+```
+return """
+```
 
 <!DOCTYPE html>
 
@@ -5956,8 +6056,9 @@ def not_found(error):
 <head>
 
 <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
+name="viewport"
+content="width=device-width,initial-scale=1"
+
 >
 
 <title>404 • RS Trader</title>
@@ -6042,15 +6143,18 @@ Go to RS Trader
 
 """, 404
 
-
 # =========================================================
+
 # 500
+
 # =========================================================
 
 @app.errorhandler(500)
 def server_error(error):
 
-    return """
+```
+return """
+```
 
 <!DOCTYPE html>
 
@@ -6059,8 +6163,9 @@ def server_error(error):
 <head>
 
 <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
+name="viewport"
+content="width=device-width,initial-scale=1"
+
 >
 
 <title>500 • RS Trader</title>
@@ -6145,18 +6250,25 @@ Go to RS Trader
 
 """, 500
 
-
 # =========================================================
+
 # RUN
+
 # =========================================================
 
-if __name__ == "__main__":
+if **name** == "**main**":
 
-    port = int(
-        os.environ.get(
-            "PORT",
-            5000
-        )
+```
+port = int(
+    os.environ.get(
+        "PORT",
+        5000
     )
+)
 
-    
+app.run(
+    host="0.0.0.0",
+    port=port,
+    debug=False
+)
+```
