@@ -1,5 +1,5 @@
 from flask import Flask, render_template_string, request, redirect, url_for, session
-from app.ui.core.calculators.calculator import MoneyCalculator
+from ui.core.calculators.calculator import MoneyCalculator
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
