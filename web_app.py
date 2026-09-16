@@ -1,4 +1,4 @@
-```python
+
 from flask import Flask, render_template_string, request, redirect, url_for, session
 from ui.core.calculators.calculator import MoneyCalculator
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6159,9 +6159,4 @@ if __name__ == "__main__":
         )
     )
 
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False
-    )
-```
+    
