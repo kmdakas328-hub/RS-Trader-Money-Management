@@ -14,7 +14,7 @@ from datetime import datetime
 
 # =========================================================
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 app.secret_key = os.environ.get(
 "RS_TRADER_SECRET",
